@@ -1,5 +1,6 @@
 import time
 data = "$GPRMC,123519.00,A,5649.1234,N,06035.5678,E,000.1,234.5,041026,,,A*7A"
+bike_path = [[56.786799, 60.495647], [56.786787, 60.495667], [56.788216, 60.498284], [56.788228, 60.498261]]
 
 # Функция получения координат по протоколу NMEA.
 # Входные параметры: nmea_string - строка в формате NMEA.
@@ -11,14 +12,58 @@ def get_coordinates(nmea_str):
     coordinates = [float(nmea_list[1]), float(nmea_list[3]), float(nmea_list[5])] 
     return coordinates
 
+
 def reading_str():
         line = file.readline()
         return line
 
+
+# Функция переводит градусы в формате NMEA (ГГММ.ММММ) в десятичный формат (ГГ.ГГГГГГ)
+# Входные данные: массив с широтой и долготой в градусах в формате NMEA
+# Выходные данные: массив с широтой и долготой в градусах в десятичном формате
+
+def nmea_to_dec(nmea_degs):
+    lat_deg = nmea_degs[0] // 100
+    lat_min = nmea_degs[0] % 100
+    lon_deg = nmea_degs[1] // 100
+    lon_min = nmea_degs[1] % 100
+    dec_degs = [round((lat_deg + lat_min / 60), 8), round(lon_deg + lon_min / 60, 8)]
+    return dec_degs
+
+
+# Функция переводит градусы в десятичном формате (ГГ.ГГГГГГ) в формат NMEA (ГГММ.ММММ)
+# Входные данные: массив с широтой и долготой в градусах в десятичном формате
+# Выходные данные: массив с широтой и долготой в градусах в формате NMEA
+
+def dec_to_nmea(dec_degs):
+    lat_deg = int(dec_degs[0])
+    lat_min = (dec_degs[0] - lat_deg) * 60
+    lon_deg = int(dec_degs[1])
+    lon_min = (dec_degs[1] - lon_deg) * 60
+    nmea_degs = [f"{lat_deg:02d}{lat_min:7.4f}", f"{lon_deg:03d}{lon_min:7.4f}"]
+    return nmea_degs
+
+
+def point_in_quad(point, quad):
+  px, py = point
+  signs = []
+  for i in range(4):
+    x1, y1 = quad[i]
+    x2, y2 = quad[(i + 1) % 4]
+    cross_product = (x2 - x1) * (py - y1) - (y2 - y1) * (px - x1)
+    signs.append(cross_product)
+  has_positive = any(s > 1e-9 for s in signs)
+  has_negative = any(s < -1e-9 for s in signs)
+
+  return (has_positive and has_negative)
+
+
 def main():
     with open("/home/vova/workspace/project_9cl_imm/data/data.txt", "r") as file:
-        for i in range(5):
-            coordinates = get_coordinates(file.readline())
-            print(coordinates)
+        for i in range(100):
+            coordinates = nmea_to_dec(get_coordinates(file.readline()))
+
+            print(point_in_quad(coordinates, bike_path))
+
 
 main()
