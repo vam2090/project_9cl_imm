@@ -1,5 +1,5 @@
-bike_path = [[56.786799, 60.495647], [56.786787, 60.495667], [56.788216, 60.498284], [56.788228, 60.498261]]
-
+config = open("./data/bike_path.txt", "r")
+bike_path = [list(map(float, pair.split(','))) for pair in config.readline().split()]
 # Функция получения координат по протоколу NMEA.
 # Входные параметры: nmea_string - строка в формате NMEA.
 # Выходные параметры: coordinates - массив чисел: время, широта и долгота.
@@ -55,7 +55,7 @@ def point_in_quad(point, quad):
   return not (has_positive and has_negative)
 
 def main():
-    with open("/home/vova/workspace/project_9cl_imm/data/immit_data.txt", "r") as file:
+    with open("./data/immit_data.txt", "r") as file:
         for i in range(100):
             coords = get_coordinates(file.readline())[1:]
             coords = nmea_to_dec(coords)
