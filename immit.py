@@ -31,15 +31,14 @@ def dec_to_nmea(dec_degs):
     nmea_degs = [f"{lat_deg:02d}{lat_min:7.4f}", f"{lon_deg:03d}{lon_min:7.4f}"]
     return nmea_degs
 
-#def immit_roads(coords):
-
-start = nmea_to_dec(get_coordinates("$GPRMC,120000.00,A,5647.2096,N,06029.7433,E,_,_,041026,,,A*7A 1")[1:])
-end = nmea_to_dec(get_coordinates("$GPRMC,120010.00,A,5647.2930,N,06029.8964,E,_,_,041026,,,A*7A")[1:])
-
+start_str = "$GPRMC,120000.00,A,5647.2096,N,06029.7433,E,_,_,041026,,,A*7A"
+end_str = "$GPRMC,120010.00,A,5647.2930,N,06029.8964,E,_,_,041026,,,A*7A"
+start = nmea_to_dec(get_coordinates(start_str)[1:])
+end = nmea_to_dec(get_coordinates(end_str)[1:])
 
 data = open("/home/vova/workspace/project_9cl_imm/data/immit_data.txt", "w")
 
-data.write("$GPRMC,120000.00,A,5647.2096,N,06029.7433,E,_,_,041026,,,A*7A\n")
+data.write(start_str + "\n")
 
 lat_step = (end[0] - start[0]) / 98
 lon_step = (end[1] - start[1]) / 98
@@ -48,8 +47,8 @@ for i in range(98):
     lat, lon = dec_to_nmea([round(start[0] + lat_step * i, 6), round(start[1] + lon_step * i, 6)])
     data.write("$GPRMC,120000.00,A," + str(lat) + ",N," + str(lon) + ",E,_,_,041026,,,A*7A\n")
 
-data.write("$GPRMC,120010.00,A,5647.2930,N,06029.8964,E,_,_,041026,,,A*7A\n")
+data.write(end_str + "\n")
 
-print(start, end)
-print(nmea_to_dec(start), nmea_to_dec(end))
-print(dec_to_nmea(nmea_to_dec(start)), dec_to_nmea(nmea_to_dec(end)))
+# print(start, end)
+# print(nmea_to_dec(start), nmea_to_dec(end))
+# print(dec_to_nmea(nmea_to_dec(start)), dec_to_nmea(nmea_to_dec(end)))

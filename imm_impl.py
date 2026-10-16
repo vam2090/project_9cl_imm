@@ -1,5 +1,3 @@
-import time
-data = "$GPRMC,123519.00,A,5649.1234,N,06035.5678,E,000.1,234.5,041026,,,A*7A"
 bike_path = [[56.786799, 60.495647], [56.786787, 60.495667], [56.788216, 60.498284], [56.788228, 60.498261]]
 
 # Функция получения координат по протоколу NMEA.
@@ -11,11 +9,6 @@ def get_coordinates(nmea_str):
     nmea_list = clean_nmea_str.split(',') # превращаем в список, разделяя по запятым
     coordinates = [float(nmea_list[1]), float(nmea_list[3]), float(nmea_list[5])] 
     return coordinates
-
-
-def reading_str():
-        line = file.readline()
-        return line
 
 
 # Функция переводит градусы в формате NMEA (ГГММ.ММММ) в десятичный формат (ГГ.ГГГГГГ)
@@ -44,6 +37,10 @@ def dec_to_nmea(dec_degs):
     return nmea_degs
 
 
+# Функция определяет, находится ли точка на данных координатах внутри четырёхугольника с вершинами в данных координатах
+# Входные данные: массив с координатами точки, массив с массивами с координатами каждой вершины четырёхугольника
+# Выходные данные: булево значение True, если точка находится внутри четырёхугольника и False, если точка находится за его пределами
+
 def point_in_quad(point, quad):
   px, py = point
   signs = []
@@ -55,15 +52,16 @@ def point_in_quad(point, quad):
   has_positive = any(s > 1e-9 for s in signs)
   has_negative = any(s < -1e-9 for s in signs)
 
-  return (has_positive and has_negative)
-
+  return not (has_positive and has_negative)
 
 def main():
-    with open("/home/vova/workspace/project_9cl_imm/data/data.txt", "r") as file:
+    with open("/home/vova/workspace/project_9cl_imm/data/immit_data.txt", "r") as file:
         for i in range(100):
-            coordinates = nmea_to_dec(get_coordinates(file.readline()))
-
-            print(point_in_quad(coordinates, bike_path))
-
+            coords = get_coordinates(file.readline())[1:]
+            coords = nmea_to_dec(coords)
+            if point_in_quad(coords, bike_path):
+                print("СИМ находится в разрешённой зоне")
+            else:
+                print("СИМ находится в запрещённой зоне")
 
 main()
