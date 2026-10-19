@@ -54,14 +54,22 @@ def point_in_quad(point, quad):
 
   return not (has_positive and has_negative)
 
+def checksum(nmea_str):
+    checksum = 0
+    end = nmea_str.find("*")
+    for char in nmea_str[1:end]:
+        checksum ^= ord(char)
+    return str(f"{checksum:02X}")
+
 def main():
     with open("./data/immit_data.txt", "r") as file:
-        for i in range(100):
-            coords = get_coordinates(file.readline())[1:]
-            coords = nmea_to_dec(coords)
-            if point_in_quad(coords, bike_path):
-                print("СИМ находится в разрешённой зоне")
-            else:
-                print("СИМ находится в запрещённой зоне")
+        while (nmea_str := file.readline()) != "":
+            if checksum(nmea_str) == nmea_str[-2:]:
+                coords = get_coordinates(file.readline())[1:]
+                coords = nmea_to_dec(coords)
+                if point_in_quad(coords, bike_path):
+                    print("СИМ находится в разрешённой зоне")
+                else:
+                    print("СИМ находится в запрещённой зоне")
 
 main()

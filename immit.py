@@ -31,8 +31,15 @@ def dec_to_nmea(dec_degs):
     nmea_degs = [f"{lat_deg:02d}{lat_min:7.4f}", f"{lon_deg:03d}{lon_min:7.4f}"]
     return nmea_degs
 
+def checksum(nmea_str):
+    checksum = 0
+    end = nmea_str.find("*")
+    for char in nmea_str[1:end]:
+        checksum ^= ord(char)
+    return str(f"{checksum:02X}")
+
 def main():
-    config = open("./data/config.txt", "r")
+    config = open("./data/config_through.txt", "r")
 
     start_str = config.readline()
     end_str = config.readline()
@@ -47,8 +54,9 @@ def main():
     lon_step = (end[1] - start[1]) / 98
 
     for i in range(98):
-        lat, lon = dec_to_nmea([round(start[0] + lat_step * i, 6), round(start[1] + lon_step * i, 6)])
-        data.write("$GPRMC,120000.00,A," + str(lat) + ",N," + str(lon) + ",E,_,_,041026,,,A*7A\n")
+        lat, lon = dec_to_nmea([start[0] + lat_step * i, start[1] + lon_step * i, 6])
+        nmea_str = "$GPRMC,120000.00,A," + str(lat) + ",N," + str(lon) + ",E,_,_,041026,,,A*"
+        data.write(nmea_str + checksum(nmea_str) + "\n")
 
     data.write(end_str)
 
